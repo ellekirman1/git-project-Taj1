@@ -2,11 +2,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class Git {
+public class gitRepository {
 
     public static void main(String[] args) {
 
-        Git git = new Git();
+        gitRepository git = new gitRepository();
 
         try {
             // Test 1: Initialize repository

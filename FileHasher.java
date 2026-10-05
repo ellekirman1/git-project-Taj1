@@ -58,7 +58,7 @@ public class FileHasher {
             backupWriter.close();
             
 
-            // TODO (FH-4): print each file's name next to hashFile(path)
+            // TODO (FH-4): print each file's name next to ellehashfile(path)
             try {
                 String hashedFile = hashFile("JavaFileSystem/backup/backup.txt");
                 System.out.println(hashedFile);
