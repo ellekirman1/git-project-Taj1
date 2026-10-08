@@ -1,6 +1,12 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 public class gitRepository {
 
@@ -13,12 +19,12 @@ public class gitRepository {
             git.initializeGit();
 
             // Test 2: Verify required files/directories exist
-            Path repository = Path.of("git");
-            Path objects = repository.resolve("objects");
-            Path index = repository.resolve("index");
-            Path head = repository.resolve("HEAD");
+            Path directory = Path.of("git");
+            Path objects = directory.resolve("objects");
+            Path index = directory.resolve("index");
+            Path head = directory.resolve("HEAD");
 
-            if (Files.isDirectory(repository)
+            if (Files.isDirectory(directory)
                     && Files.isDirectory(objects)
                     && Files.isRegularFile(index)
                     && Files.isRegularFile(head)) {
@@ -86,4 +92,54 @@ public class gitRepository {
         return hash;
     }
 
+
+//elle add writeInIndex
+
+public static void writeInIndex(String filename) {
+    try {
+
+        //creates array list
+        Path indexPath = Paths.get("git/index");
+        List<String> lines = new ArrayList<>();
+        
+        // put lines into array list
+        lines = Files.readAllLines(indexPath);
+        
+
+        String sha1Hash = FileHasher.hashFile(filename);
+        String ent = sha1Hash + " " + filename;//new line/file situation
+        boolean updated = false;
+
+        //check if already exists
+        for (int i = 0; i < lines.size(); i++) {
+            if (lines.get(i).contains(filename)) {
+                //if alrady exits updaye it
+                String[] parts = lines.get(i).split(" ");
+                String x = parts[1]; //last element of the array
+                if (x.equals(filename)) {
+                    lines.set(i, ent);
+                    updated = true;
+                }
+            }
+        }
+        //if doesnt alrewady exit add it
+        if (!updated) {
+            lines.add(ent);
+        }
+        //write it in
+        Files.write(indexPath, lines);
+
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
 }
+
+        //for my edits: duplicats work
+        //It reades multiple lines
+        //however I had to fix the index resetting
+
+
+    }
+    
+
+

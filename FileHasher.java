@@ -15,8 +15,8 @@ public class FileHasher {
     public static void main(String[] args) {
         try {
             // TODO (FH-1): create the JavaFileSystem directory
-            File root = new File("JavaFileSystem");
-            root.mkdir();
+            File fileSystemDirectory = new File("JavaFileSystem");
+            fileSystemDirectory.mkdir();
 
             // TODO (FH-2): create notes.txt, data.txt, log.txt and write a sentence into
             // each
@@ -60,8 +60,8 @@ public class FileHasher {
 
             // TODO (FH-4): print each file's name next to ellehashfile(path)
             try {
-                String hashedFile = hashFile("JavaFileSystem/backup/backup.txt");
-                System.out.println(hashedFile);
+                String backupHash = hashFile("JavaFileSystem/backup/backup.txt");
+                System.out.println(backupHash);
             } catch (IOException e) {
 
             }
@@ -71,10 +71,13 @@ public class FileHasher {
         }
     }
 
+
     /**
      * Reads the file at filePath and returns its SHA-1 hash
      * as a lowercase 64-character hexadecimal string.
      */
+
+
     public static String hashFile(String filePath) throws IOException {
         // TODO (FH-4): read the whole file, digest it, convert the bytes to hex
         Path path = Path.of(filePath);
