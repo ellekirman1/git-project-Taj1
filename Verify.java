@@ -9,6 +9,7 @@ public class Verify {
 
         git.initializeGit();
         git.createBlob("JavaFileSystem/log.txt");
+        git.createBlob("JavaFileSystem/notes.txt");
 
         git.writeInIndex("JavaFileSystem/log.txt");
         git.writeInIndex("JavaFileSystem/notes.txt");

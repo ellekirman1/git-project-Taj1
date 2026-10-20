@@ -1,11 +1,16 @@
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.HexFormat;
 import java.util.List;
 
 public class gitRepository {
@@ -45,6 +50,32 @@ public class gitRepository {
         } catch (IOException e) {
             System.out.println("Hash error: " + e.getMessage());
         }
+
+
+
+        //test tree:
+        try {
+    List<String> workingList = new ArrayList<>();
+
+    workingList.add("blob abc123 myProgram/docs/Hello.txt");
+    workingList.add("blob def456 myProgram/docs/World.txt");
+    workingList.add("blob ghi789 myProgram/README.md");
+
+    String hash1 = git.createTree(workingList, "myProgram/docs");
+    String hash2 = git.createTree(workingList, "myProgram/docs");
+
+    System.out.println("Tree exists: " +
+        Files.exists(Paths.get("git/objects/" + hash1)));
+
+    System.out.println("Correct contents: " +
+        Files.readString(Paths.get("git/objects/" + hash1))
+        .equals("blob abc123 Hello.txt\nblob def456 World.txt\n"));
+
+    System.out.println("Same hash: " + hash1.equals(hash2));
+
+} catch (IOException e) {
+    e.printStackTrace();
+}
     }
 
     public void initializeGit() throws IOException { // this is the "init" function
@@ -132,14 +163,83 @@ public static void writeInIndex(String filename) {
     } catch (IOException e) {
         e.printStackTrace();
     }
+
+}
+    
+public static String getDirPath(String path) {
+    int slash = path.lastIndexOf("/");
+
+    if (slash == -1) {
+        return "";
+    }
+
+    return path.substring(0, slash);
 }
 
+public String createTree(List<String> workingList, String dirPath)
+        throws IOException {
+
+    StringBuilder content = new StringBuilder();
+
+    for (String line : workingList) {
+        //splits up and gets diffrent parts of the line
+        String[] parts = line.split(" ", 3);
+        String type = parts[0];
+        String hash = parts[1];
+        String path = parts[2];
+        Path currentPath = Paths.get(path); 
+
+        
+        //checks if same
+        if (getDirPath(path).equals(dirPath)) {
+            String name = path.substring(path.lastIndexOf("/") + 1);
+            content.append(type + " " + hash + " " + name + "\n");
+        }
+    } 
+    File tempFile = new File("temp");
+    tempFile.createNewFile();
+    try (FileWriter tempWriter = new FileWriter(tempFile)) {
+        tempWriter.write(content.toString());
+    }
+//creates the file and saves it under the hash
+    String treeHash = FileHasher.hashFile(tempFile.getPath());
+
+    File treeFile = new File("git/objects/" + treeHash);
+
+    try (FileWriter writer = new FileWriter(treeFile)) {
+        writer.write(content.toString());
+    }
+
+    return treeHash;
+
+        // FileWriter tempWriter = new FileWriter(tempFile);
+        // tempWriter.write(content);
+        // tempWriter.close();
+        // createBlob(tempFile.getPath());
+        // String treeHash = FileHasher.hashFile(tempFile.getPath());
+        // return treeHash;
+}
+
+
+
+
+    public static String deepestdir(List<String> workingList){
+        return"";
+
+
+
+    }
+    public static void sort(){
+
+    }
         //for my edits: duplicats work
         //It reades multiple lines
         //however I had to fix the index resetting
 
 
     }
+
+
     
 
 
