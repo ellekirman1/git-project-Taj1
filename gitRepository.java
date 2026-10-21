@@ -50,32 +50,37 @@ public class gitRepository {
         } catch (IOException e) {
             System.out.println("Hash error: " + e.getMessage());
         }
+        //test truee
 
 
 
-        //test tree:
-        try {
-    List<String> workingList = new ArrayList<>();
+        //tests 3.2, 3.3 
 
-    workingList.add("blob abc123 myProgram/docs/Hello.txt");
-    workingList.add("blob def456 myProgram/docs/World.txt");
-    workingList.add("blob ghi789 myProgram/README.md");
+List<String> workingList = new ArrayList<>();
+workingList.add("blob abc123 myProgram/docs/Hello.txt");
+workingList.add("blob def456 myProgram/docs/World.txt");
+workingList.add("blob ghi789 myProgram/README.md");
 
-    String hash1 = git.createTree(workingList, "myProgram/docs");
-    String hash2 = git.createTree(workingList, "myProgram/docs");
+try {
+    //3.2
+    String treehash = git.createTree(workingList, "myProgram/docs");
+    System.out.println("Tree Hash: " + treehash);
+    System.out.println(Files.readString(Paths.get("git/objects/" + treehash)));
 
-    System.out.println("Tree exists: " +
-        Files.exists(Paths.get("git/objects/" + hash1)));
+    //3.3
+    System.out.println(git.createTreefromIndex());
+    Path tree = Paths.get("git/objects/" + git.createTreefromIndex());
 
-    System.out.println("Correct contents: " +
-        Files.readString(Paths.get("git/objects/" + hash1))
-        .equals("blob abc123 Hello.txt\nblob def456 World.txt\n"));
-
-    System.out.println("Same hash: " + hash1.equals(hash2));
+    if (Files.exists(tree)) {
+        System.out.println("yayyyy");
+    } else {
+        System.out.println("failed");
+    }
 
 } catch (IOException e) {
-    e.printStackTrace();
+    System.out.println("Test Failed: " + e.getMessage());
 }
+
     }
 
     public void initializeGit() throws IOException { // this is the "init" function
@@ -165,6 +170,9 @@ public static void writeInIndex(String filename) {
     }
 
 }
+
+
+//3.2
     
 public static String getDirPath(String path) {
     int slash = path.lastIndexOf("/");
@@ -187,9 +195,8 @@ public String createTree(List<String> workingList, String dirPath)
         String type = parts[0];
         String hash = parts[1];
         String path = parts[2];
-        Path currentPath = Paths.get(path); 
+        //Path currentPath = Paths.get(path); 
 
-        
         //checks if same
         if (getDirPath(path).equals(dirPath)) {
             String name = path.substring(path.lastIndexOf("/") + 1);
@@ -218,23 +225,99 @@ public String createTree(List<String> workingList, String dirPath)
         // createBlob(tempFile.getPath());
         // String treeHash = FileHasher.hashFile(tempFile.getPath());
         // return treeHash;
+
 }
 
 
 
 
-    public static String deepestdir(List<String> workingList){
-        return"";
+//3.3
 
-
-
+public String createTreefromIndex() throws IOException {
+    //made using lots of helpers. while loop - not recursive. goes through working list.
+    List<String> workingList = makeWorkingList();
+    String x = "";
+    while (!workingList.isEmpty()) {
+        //make tree removes level each time
+        x = maketree(workingList, deepestDir(workingList));
     }
-    public static void sort(){
+    return x;
+}
 
+
+    public String deepestDir(List<String> workingList) {
+    String deepestDir = "";
+    int maxDepth = -1;//-1 gives no issues
+    for (String line : workingList) {
+        //goes through list and finds path and directory
+        String path = line.split(" ", 3)[2];
+        String dir = getDirPath(path);
+
+        //finds its depth via looking at /
+        int depth = 0;
+        if (!dir.equals("")) {
+            depth = dir.split("/").length;
+        }
+    //finds and saves deepest directory
+        if (depth > maxDepth) {
+            maxDepth = depth;
+            deepestDir = dir;
+        }
     }
-        //for my edits: duplicats work
-        //It reades multiple lines
-        //however I had to fix the index resetting
+    return deepestDir;
+}
+
+public String maketree(List<String> workingList, String dirPath)
+        throws IOException {
+            //creates the tree and removes childrent 
+
+    sort(workingList);
+    String hash = createTree(workingList, dirPath);
+
+    for (int i = workingList.size() - 1; i >= 0; i--) {//goes through backwards
+        String path = workingList.get(i).split(" ", 3)[2];//gets path in middle
+        if (getDirPath(path).equals(dirPath)) {
+            workingList.remove(i);
+        }//gets rid of children
+    }
+    if (!dirPath.equals("")) {
+        workingList.add("tree " + hash + " " + dirPath);
+    }
+
+    return hash;
+}
+
+public List<String> makeWorkingList() throws IOException {
+    List<String> workingList = new ArrayList<>();
+    List<String> lines = Files.readAllLines(Paths.get("git/index"));
+
+    for (String line : lines) {
+        if (!line.isBlank()) {
+            workingList.add("blob " + line);
+        }
+    }
+    sort(workingList);//below
+    return workingList;
+    //this method was made in 3.3. 3.2 would have been easier if already made. However I made a working list in the tester, not in a method.
+    //this is a better way to do this i belive. it uses other helpers made.
+}
+public void sort(List<String> workingList) {   
+    
+    for (int i = 0; i < workingList.size(); i++) { //most likly inefficent way to compare. however ensures sort.    
+        for (int j = i + 1; j < workingList.size(); j++) {
+
+            //gets paths (middle section of entry)
+            String path1 = workingList.get(i).split(" ", 3)[2];
+            String path2 = workingList.get(j).split(" ", 3)[2];
+
+            if (path1.compareTo(path2) > 0) {//sorts by path. capital letters?
+                String temp = workingList.get(i);
+                workingList.set(i, workingList.get(j));
+                workingList.set(j, temp);//switches if goes into if statment
+            }
+        }
+    }
+}
 
 
     }
